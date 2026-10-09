@@ -1,6 +1,18 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
-import { CreateExpenseDto } from './dto/expense.dto';
+import { CreateExpenseDto, UpdateExpenseDto } from './dto/expense.dto';
 import { CurrentUser, AuthUser } from '../auth/auth-user.decorator';
 import { TenantGuard } from '../tenant/tenant.guard';
 import { PermissionsGuard } from '../rbac/permissions.guard';
@@ -24,5 +36,20 @@ export class ExpensesController {
   @RequirePermissions(PERMISSIONS.EXPENSES_READ)
   list(@CurrentUser() user: AuthUser, @Query('condominiumId') condominiumId: string) {
     return this.service.list(user.organizationId!, condominiumId);
+  }
+
+  @Patch(':id')
+  @RequirePermissions(PERMISSIONS.EXPENSES_WRITE)
+  @Auditable({ module: 'expenses', entity: 'Expense' })
+  update(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() dto: UpdateExpenseDto) {
+    return this.service.update(user.organizationId!, id, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermissions(PERMISSIONS.EXPENSES_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'expenses', entity: 'Expense' })
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.remove(user.organizationId!, id);
   }
 }

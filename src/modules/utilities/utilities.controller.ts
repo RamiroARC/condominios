@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UtilitiesService } from './utilities.service';
 import { CreateReadingDto } from './dto/utility-reading.dto';
 import { CurrentUser, AuthUser } from '../auth/auth-user.decorator';
@@ -36,5 +48,20 @@ export class UtilitiesController {
       month ? Number(month) : undefined,
       utilityType ?? 'WATER',
     );
+  }
+
+  @Patch(':id')
+  @RequirePermissions(PERMISSIONS.UTILITIES_WRITE)
+  @Auditable({ module: 'utilities', entity: 'UtilityReading' })
+  update(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() dto: CreateReadingDto) {
+    return this.service.update(user.organizationId!, id, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermissions(PERMISSIONS.UTILITIES_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'utilities', entity: 'UtilityReading' })
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.remove(user.organizationId!, id);
   }
 }

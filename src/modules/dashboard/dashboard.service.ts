@@ -93,9 +93,11 @@ export class DashboardService {
     organizationId: string,
     condominiumId: string,
     periodId?: string,
+    buildingId?: string,
   ): Promise<DashboardSummary> {
     const orgId = new Types.ObjectId(organizationId);
     const condoId = new Types.ObjectId(condominiumId);
+    const bId = buildingId ? new Types.ObjectId(buildingId) : null;
 
     // Periodo: el indicado o el más reciente del condominio.
     const period = periodId
@@ -151,7 +153,13 @@ export class DashboardService {
           : Promise.resolve([]),
         this.ticketModel
           .aggregate<{ _id: string; count: number }>([
-            { $match: { organizationId: orgId, condominiumId: condoId } },
+            {
+              $match: {
+                organizationId: orgId,
+                condominiumId: condoId,
+                ...(bId ? { buildingId: bId } : {}),
+              },
+            },
             { $group: { _id: '$status', count: { $sum: 1 } } },
           ])
           .exec(),
@@ -222,9 +230,13 @@ export class DashboardService {
           .sort({ year: -1, month: -1 })
           .limit(10)
           .exec(),
-        // Activos y su estado.
+        // Activos y su estado (filtrados por edificio si se indica).
         this.assetModel
-          .find({ organizationId: orgId, condominiumId: condoId })
+          .find({
+            organizationId: orgId,
+            condominiumId: condoId,
+            ...(bId ? { buildingId: bId } : {}),
+          })
           .sort({ type: 1, name: 1 })
           .exec(),
       ]);

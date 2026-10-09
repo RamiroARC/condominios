@@ -1,5 +1,10 @@
-import { Document, FilterQuery, Model, QueryOptions, UpdateQuery } from 'mongoose';
+import { Document, FilterQuery, Model, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { NotFoundException } from '@nestjs/common';
+
+/** Convierte un id (string u ObjectId) a ObjectId; si no es válido, lo deja igual. */
+function toObjectId(id: string): Types.ObjectId | string {
+  return Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : id;
+}
 
 /**
  * Repositorio base multi-tenant. TODO acceso a datos de negocio pasa por aquí,
@@ -15,13 +20,17 @@ import { NotFoundException } from '@nestjs/common';
 export abstract class TenantBaseRepository<T extends Document> {
   protected constructor(protected readonly model: Model<T>) {}
 
-  /** Inyecta organizationId en cualquier filtro. */
+  /**
+   * Inyecta organizationId en cualquier filtro. Se convierte a ObjectId para
+   * que las consultas coincidan con documentos cuyo organizationId se guardó
+   * como ObjectId (no depende del auto-casteo de Mongoose).
+   */
   private scoped(organizationId: string, filter: FilterQuery<T> = {}): FilterQuery<T> {
-    return { ...filter, organizationId } as FilterQuery<T>;
+    return { ...filter, organizationId: toObjectId(organizationId) } as FilterQuery<T>;
   }
 
   async create(organizationId: string, data: Partial<T>): Promise<T> {
-    const doc = new this.model({ ...data, organizationId });
+    const doc = new this.model({ ...data, organizationId: toObjectId(organizationId) });
     return doc.save();
   }
 

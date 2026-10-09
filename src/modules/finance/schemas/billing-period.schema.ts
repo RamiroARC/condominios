@@ -50,7 +50,7 @@ export class BillingPeriod {
   @Prop({ enum: PERIOD_STATUSES, default: 'OPEN', index: true })
   status!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   closedAt?: Date | null;
 
   @Prop({ type: PeriodSnapshotSchema, default: null })

@@ -39,7 +39,10 @@ export class FinanceService {
   // ─── Conceptos ────────────────────────────────────────────────────────────
 
   createConcept(organizationId: string, dto: CreateConceptDto) {
-    return this.concepts.create(organizationId, dto as never);
+    return this.concepts.create(organizationId, {
+      ...dto,
+      buildingId: dto.buildingId ? new Types.ObjectId(dto.buildingId) : null,
+    } as never);
   }
 
   async listConcepts(organizationId: string, condominiumId: string) {
@@ -48,6 +51,15 @@ export class FinanceService {
 
   updateConcept(organizationId: string, id: string, dto: UpdateConceptDto) {
     return this.concepts.updateById(organizationId, id, dto);
+  }
+
+  removeConcept(organizationId: string, id: string) {
+    return this.concepts.deleteById(organizationId, id);
+  }
+
+  /** Cancela un cargo (no se elimina, por integridad contable/auditable). */
+  cancelCharge(organizationId: string, id: string) {
+    return this.charges.updateById(organizationId, id, { status: 'CANCELLED' });
   }
 
   // ─── Periodos ───────────────────────────────────────────────────────────────
@@ -105,20 +117,29 @@ export class FinanceService {
       throw new BadRequestException('El condominio no tiene departamentos activos');
     }
 
-    const totalCoefficient = apartments.reduce(
-      (sum, a) => sum + (a.participationCoefficient || 0),
-      0,
-    );
-
     const created: unknown[] = [];
     for (const concept of concepts) {
-      for (const apt of apartments) {
+      // Departamentos aplicables: todos los del condominio, o solo los del
+      // edificio si el concepto está acotado a un edificio (buildingId).
+      const scopeApts = concept.buildingId
+        ? apartments.filter((a) => String(a.buildingId) === String(concept.buildingId))
+        : apartments;
+
+      if (!scopeApts.length) continue; // el edificio del concepto no tiene deptos activos
+
+      // Suma de coeficientes del conjunto aplicable (reparto relativo al alcance).
+      const scopeTotalCoefficient = scopeApts.reduce(
+        (sum, a) => sum + (a.participationCoefficient || 0),
+        0,
+      );
+
+      for (const apt of scopeApts) {
         const { amount, formula, coefficient } = this.computeAmount(
           concept.allocationMethod as AllocationMethod,
           concept.amount,
           apt.participationCoefficient || 0,
-          totalCoefficient,
-          apartments.length,
+          scopeTotalCoefficient,
+          scopeApts.length,
         );
         if (amount <= 0) continue;
 
@@ -145,7 +166,7 @@ export class FinanceService {
               calculationSnapshot: {
                 method: concept.allocationMethod,
                 participationCoefficient: coefficient,
-                apartmentsCount: apartments.length,
+                apartmentsCount: scopeApts.length,
                 formula,
               },
               amount,
@@ -171,10 +192,20 @@ export class FinanceService {
   ): { amount: number; formula: string; coefficient: number } {
     switch (method) {
       case 'COEFFICIENT': {
-        const ratio = totalCoefficient > 0 ? coefficient / totalCoefficient : 0;
+        // Reparto por coeficiente de participación. Si el conjunto no tiene
+        // coeficientes cargados (suma = 0), se reparte equitativamente entre
+        // los departamentos del alcance como fallback, para no perder el cargo.
+        if (totalCoefficient > 0) {
+          const ratio = coefficient / totalCoefficient;
+          return {
+            amount: this.round(baseAmount * ratio),
+            formula: `${baseAmount} * (${coefficient} / ${totalCoefficient})`,
+            coefficient,
+          };
+        }
         return {
-          amount: this.round(baseAmount * ratio),
-          formula: `${baseAmount} * (${coefficient} / ${totalCoefficient})`,
+          amount: this.round(apartmentsCount > 0 ? baseAmount / apartmentsCount : 0),
+          formula: `${baseAmount} / ${apartmentsCount} (reparto equitativo: sin coeficientes)`,
           coefficient,
         };
       }
@@ -203,7 +234,9 @@ export class FinanceService {
       throw new BadRequestException('El periodo ya está cerrado');
     }
 
-    const charges = await this.charges.find(organizationId, { periodId });
+    const charges = await this.charges.find(organizationId, {
+      periodId: new Types.ObjectId(periodId),
+    });
     const totalCharged = charges.reduce((s, c) => s + c.amount, 0);
     const totalPaid = charges.reduce((s, c) => s + c.paidAmount, 0);
     const byConcept: Record<string, number> = {};
@@ -233,8 +266,10 @@ export class FinanceService {
     query: PaginationQueryDto,
   ) {
     const filter: Record<string, unknown> = {};
-    if (filters.periodId) filter.periodId = filters.periodId;
-    if (filters.apartmentId) filter.apartmentId = filters.apartmentId;
+    // periodId/apartmentId se guardan como ObjectId en los cargos; hay que
+    // convertir los strings entrantes para que el match funcione.
+    if (filters.periodId) filter.periodId = new Types.ObjectId(filters.periodId);
+    if (filters.apartmentId) filter.apartmentId = new Types.ObjectId(filters.apartmentId);
     if (filters.status) filter.status = filters.status;
     const { items, total } = await this.charges.paginate(
       organizationId,

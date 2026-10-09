@@ -5,6 +5,11 @@ export class CreateAssetDto {
   @IsMongoId()
   condominiumId!: string;
 
+  /** Opcional: si se indica, el activo pertenece a ese edificio. */
+  @IsOptional()
+  @IsMongoId()
+  buildingId?: string;
+
   @IsString()
   @MaxLength(150)
   name!: string;

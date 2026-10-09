@@ -19,6 +19,7 @@ export class DashboardController {
       user.organizationId!,
       query.condominiumId,
       query.periodId,
+      query.buildingId,
     );
   }
 }

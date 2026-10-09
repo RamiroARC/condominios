@@ -71,6 +71,10 @@ export class CommunicationsService {
     return this.repo.updateById(organizationId, id, { status: 'ARCHIVED' });
   }
 
+  remove(organizationId: string, id: string) {
+    return this.repo.deleteById(organizationId, id);
+  }
+
   /** Registra la lectura del anuncio por una persona (idempotente). */
   async markRead(organizationId: string, id: string, dto: MarkReadDto) {
     const personId = new Types.ObjectId(dto.personId);

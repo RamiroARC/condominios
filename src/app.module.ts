@@ -21,6 +21,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { UtilitiesModule } from './modules/utilities/utilities.module';
+import { AdminModule } from './modules/users/admin.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 
@@ -62,6 +63,7 @@ import { AuditInterceptor } from './modules/audit/audit.interceptor';
     AssetsModule,
     ExpensesModule,
     UtilitiesModule,
+    AdminModule,
   ],
   providers: [
     // JWT global: todo endpoint requiere auth salvo los marcados @Public()

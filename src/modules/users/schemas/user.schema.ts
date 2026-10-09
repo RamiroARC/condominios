@@ -36,10 +36,10 @@ export class User {
   status!: string;
 
   /** Hash del refresh token vigente (rotativo). Nunca se serializa. */
-  @Prop({ select: false, default: null })
+  @Prop({ type: String, select: false, default: null })
   refreshTokenHash?: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   lastLoginAt?: Date | null;
 }
 

@@ -23,6 +23,13 @@ export class FeeConcept {
   @Prop({ type: Types.ObjectId, ref: 'Condominium', required: true })
   condominiumId!: Types.ObjectId;
 
+  /**
+   * Si está presente, el concepto aplica solo a ese edificio y se reparte entre
+   * sus departamentos. Si es null, aplica a todo el condominio.
+   */
+  @Prop({ type: Types.ObjectId, ref: 'Building', default: null })
+  buildingId?: Types.ObjectId | null;
+
   @Prop({ required: true })
   name!: string;
 

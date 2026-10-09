@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -84,5 +87,13 @@ export class CommunicationsController {
     @Body() dto: MarkReadDto,
   ) {
     return this.service.markRead(user.organizationId!, id, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermissions(PERMISSIONS.COMMUNICATIONS_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'communications', entity: 'Announcement' })
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.remove(user.organizationId!, id);
   }
 }

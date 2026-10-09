@@ -17,6 +17,11 @@ export class CreateConceptDto {
   @IsMongoId()
   condominiumId!: string;
 
+  /** Opcional: si se indica, el concepto aplica solo a ese edificio. */
+  @IsOptional()
+  @IsMongoId()
+  buildingId?: string;
+
   @IsString()
   @MaxLength(150)
   name!: string;

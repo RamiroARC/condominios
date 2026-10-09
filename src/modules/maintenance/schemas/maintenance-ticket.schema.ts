@@ -54,6 +54,13 @@ export class MaintenanceTicket {
   @Prop({ type: Types.ObjectId, ref: 'Condominium', required: true })
   condominiumId!: Types.ObjectId;
 
+  /**
+   * Edificio al que pertenece el ticket (opcional). Si es null, es un ticket a
+   * nivel de condominio (áreas comunes generales).
+   */
+  @Prop({ type: Types.ObjectId, ref: 'Building', default: null })
+  buildingId?: Types.ObjectId | null;
+
   /** Departamento afectado (opcional: puede ser área común). */
   @Prop({ type: Types.ObjectId, ref: 'Apartment', default: null })
   apartmentId?: Types.ObjectId | null;
@@ -81,7 +88,7 @@ export class MaintenanceTicket {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   assignedTo?: Types.ObjectId | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   resolvedAt?: Date | null;
 
   @Prop({ type: [TicketHistoryEntrySchema], default: [] })

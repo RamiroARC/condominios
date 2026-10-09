@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -41,12 +44,13 @@ export class MaintenanceController {
     @CurrentUser() user: AuthUser,
     @Query() query: PaginationQueryDto,
     @Query('condominiumId') condominiumId?: string,
+    @Query('buildingId') buildingId?: string,
     @Query('status') status?: string,
     @Query('assignedTo') assignedTo?: string,
   ) {
     return this.service.list(
       user.organizationId!,
-      { condominiumId, status, assignedTo },
+      { condominiumId, buildingId, status, assignedTo },
       query,
     );
   }
@@ -88,5 +92,13 @@ export class MaintenanceController {
     @Body() dto: ChangeStatusDto,
   ) {
     return this.service.changeStatus(user.organizationId!, id, user.userId, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermissions(PERMISSIONS.MAINTENANCE_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'maintenance', entity: 'MaintenanceTicket' })
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.remove(user.organizationId!, id);
   }
 }

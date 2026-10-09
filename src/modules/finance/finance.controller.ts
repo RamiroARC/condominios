@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -56,6 +59,21 @@ export class FinanceController {
     @Body() dto: UpdateConceptDto,
   ) {
     return this.service.updateConcept(user.organizationId!, id, dto);
+  }
+
+  @Delete('concepts/:id')
+  @RequirePermissions(PERMISSIONS.FINANCE_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'finance', entity: 'FeeConcept' })
+  removeConcept(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.removeConcept(user.organizationId!, id);
+  }
+
+  @Patch('charges/:id/cancel')
+  @RequirePermissions(PERMISSIONS.FINANCE_WRITE)
+  @Auditable({ module: 'finance', entity: 'Charge' })
+  cancelCharge(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.cancelCharge(user.organizationId!, id);
   }
 
   // ─── Periodos ────────────────────────────────────────────────────────────────

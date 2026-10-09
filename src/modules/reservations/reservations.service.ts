@@ -40,6 +40,10 @@ export class ReservationsService {
     return this.areas.updateById(organizationId, id, dto);
   }
 
+  removeArea(organizationId: string, id: string) {
+    return this.areas.deleteById(organizationId, id);
+  }
+
   // ─── Reservas ──────────────────────────────────────────────────────────────
 
   async createReservation(organizationId: string, dto: CreateReservationDto) {

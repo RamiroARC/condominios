@@ -35,7 +35,7 @@ export class ApartmentOccupant {
   @Prop({ required: true })
   startDate!: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   endDate?: Date | null;
 
   @Prop({ default: false })

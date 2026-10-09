@@ -8,4 +8,9 @@ export class SummaryQueryDto {
   @IsOptional()
   @IsMongoId()
   periodId?: string;
+
+  /** Edificio opcional; si se indica, mantenimiento y activos se filtran por él. */
+  @IsOptional()
+  @IsMongoId()
+  buildingId?: string;
 }

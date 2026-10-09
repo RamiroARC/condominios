@@ -40,7 +40,7 @@ export class Reservation {
   @Prop({ enum: RESERVATION_STATUSES, default: 'CONFIRMED', index: true })
   status!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   cancelledAt?: Date | null;
 
   @Prop()

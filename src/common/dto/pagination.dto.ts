@@ -19,6 +19,47 @@ export class PaginationQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  /**
+   * Filtros comunes de scoping por entidad relacionada. Se declaran aquí para
+   * que el ValidationPipe (whitelist + forbidNonWhitelisted) los acepte como
+   * query params en los listados que combinan @Query() con este DTO.
+   */
+  @IsOptional()
+  @IsString()
+  condominiumId?: string;
+
+  @IsOptional()
+  @IsString()
+  buildingId?: string;
+
+  @IsOptional()
+  @IsString()
+  apartmentId?: string;
+
+  @IsOptional()
+  @IsString()
+  periodId?: string;
+
+  @IsOptional()
+  @IsString()
+  commonAreaId?: string;
+
+  @IsOptional()
+  @IsString()
+  personId?: string;
+
+  @IsOptional()
+  @IsString()
+  chargeId?: string;
+
+  @IsOptional()
+  @IsString()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }
 
 /** Respuesta paginada genérica. */

@@ -51,7 +51,7 @@ export class Announcement {
   @Prop({ enum: ANNOUNCEMENT_STATUSES, default: 'DRAFT', index: true })
   status!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   publishedAt?: Date | null;
 
   /** Usuario que crea/publica el anuncio. */

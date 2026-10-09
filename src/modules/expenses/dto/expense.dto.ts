@@ -19,3 +19,22 @@ export class CreateExpenseDto {
   @IsDateString()
   incurredAt!: string;
 }
+
+export class UpdateExpenseDto {
+  @IsOptional()
+  @IsIn(EXPENSE_CATEGORIES as unknown as string[])
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amount?: number;
+
+  @IsOptional()
+  @IsDateString()
+  incurredAt?: string;
+}

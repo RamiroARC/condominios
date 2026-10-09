@@ -30,6 +30,13 @@ export class Asset {
   @Prop({ type: Types.ObjectId, ref: 'Condominium', required: true })
   condominiumId!: Types.ObjectId;
 
+  /**
+   * Si está presente, el activo pertenece a ese edificio (ej. ascensor de una
+   * torre). Si es null, es un activo a nivel de condominio (ej. bomba general).
+   */
+  @Prop({ type: Types.ObjectId, ref: 'Building', default: null })
+  buildingId?: Types.ObjectId | null;
+
   @Prop({ required: true })
   name!: string;
 
@@ -39,7 +46,7 @@ export class Asset {
   @Prop({ enum: ASSET_STATUSES, default: 'OPERATIONAL', index: true })
   status!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   nextMaintenanceAt?: Date | null;
 
   @Prop()

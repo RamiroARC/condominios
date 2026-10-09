@@ -52,6 +52,25 @@ La API queda expuesta bajo el prefijo global **`/api`** (por defecto en el puert
 
 ---
 
+## Prueba local rápida
+
+1. Copia `.env.example` a `.env` y completa al menos `MONGODB_URI`, `JWT_SECRET`
+   y `JWT_REFRESH_SECRET`.
+2. Instala dependencias: `npm install`.
+3. Carga datos de demo (organización, condominio, rol admin y usuario):
+   ```bash
+   npm run seed
+   ```
+   Credenciales por defecto: `admin@demo.com` / `Admin1234!` (configurables con
+   `SEED_ADMIN_EMAIL` y `SEED_ADMIN_PASSWORD`).
+4. Arranca la API: `npm run start:dev` → `http://localhost:3000/api`.
+5. Arranca el frontend en **otro puerto** (la API usa 3000):
+   `next dev -p 3001` en `condominios-web`, con
+   `NEXT_PUBLIC_API_URL=http://localhost:3000/api` en su `.env.local`. Abre
+   `http://localhost:3001` e inicia sesión con las credenciales del seed.
+
+> El backend admite el origen `http://localhost:3001` por CORS por defecto.
+
 ## Variables de entorno
 
 Definidas en `.env` (nunca se versiona). Ver `.env.example` para la plantilla.
@@ -186,10 +205,18 @@ en el JWT (multi-tenant) y el permiso correspondiente.
 | Reservations | `POST/GET/PATCH /reservations/areas`, `POST/GET /reservations`, `PATCH /reservations/:id/cancel` | `reservations:read` / `:write` |
 | Communications | `POST/GET /announcements`, `GET/PATCH /:id`, `PATCH /:id/publish`, `PATCH /:id/archive`, `PATCH /:id/read` | `communications:read` / `:write` |
 | Dashboard | `GET /dashboard/summary?condominiumId&periodId` | `dashboard:read` |
-| Assets | `POST/GET /assets`, `PATCH /assets/:id` | `assets:read` / `:write` |
-| Expenses | `POST/GET /expenses` | `expenses:read` / `:write` |
-| Utilities | `POST/GET /utility-readings` | `utilities:read` / `:write` |
+| Assets | `POST/GET /assets`, `PATCH/DELETE /assets/:id` | `assets:read` / `:write` |
+| Expenses | `POST/GET /expenses`, `PATCH/DELETE /expenses/:id` | `expenses:read` / `:write` |
+| Utilities | `POST/GET /utility-readings`, `PATCH/DELETE /utility-readings/:id` | `utilities:read` / `:write` |
+| Users | `POST/GET /users`, `PATCH /users/:id`, `PUT /users/:id/roles` | `users:read` / `:write` |
+| Roles | `POST/GET /roles`, `PATCH/DELETE /roles/:id` | `roles:read` / `:write` |
 | Audit | `GET /audit-logs` | `audit:read` |
+
+La mayoría de recursos soporta el ciclo completo `POST` (crear) / `GET` (listar)
+/ `PATCH` (editar) / `DELETE` (eliminar). Los **cargos** de finanzas no se
+eliminan por integridad contable: se **cancelan** (`PATCH /finance/charges/:id/cancel`).
+Los **pagos** son inmutables. Los **roles del sistema** no se editan ni eliminan.
+Las **organizaciones** no se eliminan (son el tenant raíz).
 
 Los listados aceptan paginación (`page`, `pageSize`, `search`).
 

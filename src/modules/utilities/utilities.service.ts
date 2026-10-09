@@ -32,4 +32,22 @@ export class UtilitiesService {
     if (month) filter.month = month;
     return this.repo.find(organizationId, filter, { sort: { apartmentId: 1 } });
   }
+
+  update(organizationId: string, id: string, dto: Partial<CreateReadingDto>) {
+    const update: Record<string, unknown> = { ...dto };
+    if (dto.previousReading !== undefined && dto.currentReading !== undefined) {
+      if (dto.currentReading < dto.previousReading) {
+        throw new BadRequestException(
+          'La lectura actual no puede ser menor que la anterior',
+        );
+      }
+      update.consumption =
+        Math.round((dto.currentReading - dto.previousReading) * 1000) / 1000;
+    }
+    return this.repo.updateById(organizationId, id, update as never);
+  }
+
+  remove(organizationId: string, id: string) {
+    return this.repo.deleteById(organizationId, id);
+  }
 }

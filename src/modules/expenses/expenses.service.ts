@@ -23,4 +23,19 @@ export class ExpensesService {
       { sort: { incurredAt: -1 } },
     );
   }
+
+  update(organizationId: string, id: string, dto: Partial<CreateExpenseDto>) {
+    const update: Record<string, unknown> = { ...dto };
+    if (dto.incurredAt) {
+      const d = new Date(dto.incurredAt);
+      update.incurredAt = d;
+      update.year = d.getFullYear();
+      update.month = d.getMonth() + 1;
+    }
+    return this.repo.updateById(organizationId, id, update as never);
+  }
+
+  remove(organizationId: string, id: string) {
+    return this.repo.deleteById(organizationId, id);
+  }
 }

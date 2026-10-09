@@ -27,6 +27,7 @@ export class MaintenanceService {
   create(organizationId: string, userId: string, dto: CreateTicketDto) {
     return this.repo.create(organizationId, {
       ...dto,
+      buildingId: dto.buildingId ? new Types.ObjectId(dto.buildingId) : null,
       status: 'OPEN',
       history: [
         {
@@ -40,11 +41,12 @@ export class MaintenanceService {
 
   async list(
     organizationId: string,
-    filters: { condominiumId?: string; status?: string; assignedTo?: string },
+    filters: { condominiumId?: string; buildingId?: string; status?: string; assignedTo?: string },
     query: PaginationQueryDto,
   ) {
     const filter: Record<string, unknown> = {};
     if (filters.condominiumId) filter.condominiumId = filters.condominiumId;
+    if (filters.buildingId) filter.buildingId = filters.buildingId;
     if (filters.status) filter.status = filters.status;
     if (filters.assignedTo) filter.assignedTo = filters.assignedTo;
     if (query.search) filter.title = { $regex: query.search, $options: 'i' };
@@ -64,6 +66,10 @@ export class MaintenanceService {
 
   update(organizationId: string, id: string, dto: UpdateTicketDto) {
     return this.repo.updateById(organizationId, id, dto);
+  }
+
+  remove(organizationId: string, id: string) {
+    return this.repo.deleteById(organizationId, id);
   }
 
   async assign(organizationId: string, id: string, userId: string, dto: AssignTicketDto) {

@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -54,6 +57,14 @@ export class ReservationsController {
     @Body() dto: UpdateCommonAreaDto,
   ) {
     return this.service.updateArea(user.organizationId!, id, dto);
+  }
+
+  @Delete('areas/:id')
+  @RequirePermissions(PERMISSIONS.RESERVATIONS_WRITE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auditable({ module: 'reservations', entity: 'CommonArea' })
+  removeArea(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.service.removeArea(user.organizationId!, id);
   }
 
   // ─── Reservas ──────────────────────────────────────────────────────────────

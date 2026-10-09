@@ -15,6 +15,11 @@ export class CreateTicketDto {
   @IsMongoId()
   condominiumId!: string;
 
+  /** Opcional: edificio al que pertenece el ticket. */
+  @IsOptional()
+  @IsMongoId()
+  buildingId?: string;
+
   @IsOptional()
   @IsMongoId()
   apartmentId?: string;
